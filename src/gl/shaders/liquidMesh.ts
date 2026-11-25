@@ -52,29 +52,34 @@ export const LIQUID_FRAGMENT_SHADER = /* glsl */ `
     vec2 aspect = vec2(uResolution.x / max(uResolution.y, 1.0), 1.0);
     vec2 uv = (vUv - 0.5) * aspect;
 
-    vec2 flow = uv * 1.4 - uPointer * 0.25;
-    float t = uTime * 0.14;
+    vec2 flow = uv * 1.35 - uPointer * 0.32;
+    float t = uTime * 0.16;
     float q = fbm(flow + vec2(t, -t * 0.7));
-    float h = fbm(flow + q * (0.85 + uVelocity * 0.45) + vec2(-t * 0.5, t * 0.4));
+    float h = fbm(flow + q * (0.95 + uVelocity * 0.55) + vec2(-t * 0.5, t * 0.4));
 
-    // Crisp liquid caustics on deep #0F0F0F
-    vec3 baseDark = vec3(0.0588, 0.0588, 0.0588);
-    vec3 purple = vec3(0.541, 0.169, 0.886);
-    vec3 electric = vec3(0.349, 0.0, 1.0);
-    vec3 slate = vec3(0.553, 0.599, 0.682);
+    vec3 baseDark = vec3(0.0588, 0.0588, 0.0588); // #0F0F0F
+    vec3 purple = vec3(0.541, 0.169, 0.886);      // #8A2BE2
+    vec3 electric = vec3(0.349, 0.0, 1.0);        // #5900FF
+    vec3 magentaGlow = vec3(0.85, 0.25, 1.0);
 
-    float band = smoothstep(0.58, 0.86, h);
-    float highlight = smoothstep(0.76, 0.94, h);
-    float vignette = 1.0 - smoothstep(0.25, 1.15, length(uv));
+    // Rich liquid aura + strong halation focal glow on right/center
+    float band = smoothstep(0.42, 0.84, h);
+    float highlight = smoothstep(0.68, 0.92, h);
 
-    vec3 tint = mix(electric, purple, clamp(uScroll * 0.8 + h * 0.5, 0.0, 1.0));
+    vec2 glowCenter = vec2(0.35 + uPointer.x * 0.18, 0.02 + uPointer.y * 0.14);
+    float radialGlow = exp(-dot(uv - glowCenter, uv - glowCenter) * 2.4);
+
+    vec3 tint = mix(electric, purple, clamp(uScroll * 0.75 + h * 0.6, 0.0, 1.0));
     vec3 color = baseDark;
-    color += tint * band * 0.28 * vignette;
-    color += mix(purple, slate, 0.35) * highlight * (0.24 + uVelocity * 0.18);
+    color += tint * band * 0.46;
+    color += mix(purple, magentaGlow, 0.45) * radialGlow * (0.48 + uVelocity * 0.22);
+    color += magentaGlow * highlight * (0.38 + uVelocity * 0.25);
 
-    // Subtle 24 fps procedural grain
+    // Strong 24 fps procedural film grain
     float grain = hash21(gl_FragCoord.xy + vec2(uGrainTime * 37.0, uGrainTime * 71.0)) - 0.5;
-    color += grain * uGrainIntensity * 0.75;
+    float lum = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    float lumaMask = mix(1.0, 0.55, smoothstep(0.15, 0.85, lum));
+    color += grain * uGrainIntensity * lumaMask;
 
     gl_FragColor = vec4(max(color, vec3(0.0)), 1.0);
   }

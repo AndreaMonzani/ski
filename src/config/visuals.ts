@@ -10,7 +10,7 @@ export interface VisualConfig {
 
 export const VISUAL_CONFIG: VisualConfig = {
   grainFps: 24,
-  grainIntensity: 0.085,
+  grainIntensity: 0.2,
   desktopDprCap: 1.5,
   mobileDprCap: 1,
   targetFrameMs: 20,
