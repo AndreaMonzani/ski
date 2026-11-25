@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useI18n } from '../hooks/useI18n';
 import { shouldUseWebGL, useMotionState } from '../hooks/useMotionState';
 import { Preloader } from '../components/layout/Preloader';
+import { CustomCursor } from '../components/ui/CustomCursor';
 import { MobileBottomBar } from '../components/layout/MobileBottomBar';
 import { MethodSection } from '../components/sections/MethodSection';
 import { FaqSection } from '../components/sections/FaqSection';
@@ -95,6 +96,7 @@ export function Home() {
       className="relative min-h-[100dvh] flex flex-col bg-surface text-ink overflow-x-clip"
     >
       <Preloader />
+      <CustomCursor />
 
       {showStaticFallback && (
         <div
@@ -102,11 +104,6 @@ export function Home() {
           className="pointer-events-none fixed inset-0 z-0 fallback-liquid-bg"
         />
       )}
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[1] css-film-grain opacity-60"
-      />
 
       {webglSupported && mount3D && (
         <Suspense fallback={null}>

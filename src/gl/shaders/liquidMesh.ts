@@ -7,7 +7,7 @@ export const LIQUID_VERTEX_SHADER = /* glsl */ `
 `;
 
 export const LIQUID_FRAGMENT_SHADER = /* glsl */ `
-  precision mediump float;
+  precision highp float;
 
   varying vec2 vUv;
 
@@ -19,9 +19,15 @@ export const LIQUID_FRAGMENT_SHADER = /* glsl */ `
   uniform float uGrainIntensity;
   uniform vec2 uResolution;
 
+  // High-frequency, non-tiling screen-space film grain
+  float interleavedGradientNoise(vec2 uv) {
+    vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+    return fract(magic.z * fract(dot(uv, magic.xy)));
+  }
+
   float hash21(vec2 p) {
-    p = fract(p * vec2(234.34, 435.345));
-    p += dot(p, p + 34.23);
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
     return fract(p.x * p.y);
   }
 
@@ -51,35 +57,40 @@ export const LIQUID_FRAGMENT_SHADER = /* glsl */ `
   void main() {
     vec2 aspect = vec2(uResolution.x / max(uResolution.y, 1.0), 1.0);
     vec2 uv = (vUv - 0.5) * aspect;
+    vec2 pointerUv = uPointer * 0.5 * aspect;
 
-    vec2 flow = uv * 1.35 - uPointer * 0.32;
-    float t = uTime * 0.16;
+    // Interactive liquid flow displaced by pointer position & velocity
+    vec2 flow = uv * 1.25 - pointerUv * 0.45;
+    float t = uTime * 0.14;
     float q = fbm(flow + vec2(t, -t * 0.7));
-    float h = fbm(flow + q * (0.95 + uVelocity * 0.55) + vec2(-t * 0.5, t * 0.4));
+    float h = fbm(flow + q * (0.9 + uVelocity * 0.65) + vec2(-t * 0.4, t * 0.35));
 
     vec3 baseDark = vec3(0.0588, 0.0588, 0.0588); // #0F0F0F
     vec3 purple = vec3(0.541, 0.169, 0.886);      // #8A2BE2
     vec3 electric = vec3(0.349, 0.0, 1.0);        // #5900FF
-    vec3 magentaGlow = vec3(0.85, 0.25, 1.0);
+    vec3 magenta = vec3(0.86, 0.32, 1.0);
 
-    // Rich liquid aura + strong halation focal glow on right/center
-    float band = smoothstep(0.42, 0.84, h);
-    float highlight = smoothstep(0.68, 0.92, h);
+    // Interactive cursor aura + focal glow behind the 3D sculpture
+    float cursorGlow = exp(-dot(uv - pointerUv, uv - pointerUv) * 3.8);
+    vec2 heroCenter = vec2(0.32, 0.02);
+    float heroGlow = exp(-dot(uv - heroCenter, uv - heroCenter) * 2.2);
 
-    vec2 glowCenter = vec2(0.35 + uPointer.x * 0.18, 0.02 + uPointer.y * 0.14);
-    float radialGlow = exp(-dot(uv - glowCenter, uv - glowCenter) * 2.4);
+    float band = smoothstep(0.45, 0.86, h);
+    float highlight = smoothstep(0.72, 0.94, h);
 
-    vec3 tint = mix(electric, purple, clamp(uScroll * 0.75 + h * 0.6, 0.0, 1.0));
+    vec3 tint = mix(electric, purple, clamp(uScroll * 0.7 + h * 0.55, 0.0, 1.0));
     vec3 color = baseDark;
-    color += tint * band * 0.46;
-    color += mix(purple, magentaGlow, 0.45) * radialGlow * (0.48 + uVelocity * 0.22);
-    color += magentaGlow * highlight * (0.38 + uVelocity * 0.25);
+    color += tint * band * 0.36;
+    color += mix(purple, magenta, 0.4) * heroGlow * 0.38;
+    color += magenta * cursorGlow * (0.22 + uVelocity * 0.25);
+    color += vec3(0.95, 0.65, 1.0) * highlight * (0.22 + uVelocity * 0.2);
 
-    // Strong 24 fps procedural film grain
-    float grain = hash21(gl_FragCoord.xy + vec2(uGrainTime * 37.0, uGrainTime * 71.0)) - 0.5;
+    // Organic 24 fps film grain (zero tiling)
+    vec2 grainCoord = gl_FragCoord.xy + vec2(mod(uGrainTime * 19.37, 256.0), mod(uGrainTime * 43.11, 256.0));
+    float g = interleavedGradientNoise(grainCoord) - 0.5;
     float lum = dot(color, vec3(0.2126, 0.7152, 0.0722));
-    float lumaMask = mix(1.0, 0.55, smoothstep(0.15, 0.85, lum));
-    color += grain * uGrainIntensity * lumaMask;
+    float lumaMask = mix(1.0, 0.45, smoothstep(0.15, 0.8, lum));
+    color += g * uGrainIntensity * lumaMask;
 
     gl_FragColor = vec4(max(color, vec3(0.0)), 1.0);
   }
