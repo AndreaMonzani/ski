@@ -9,26 +9,30 @@ interface HeroModelProps {
   paused: boolean;
 }
 
+/**
+ * Concept A — The Carved Arc: sleek dark-obsidian refractive ribbon
+ * with tapered tips and electric-purple specular edge.
+ */
 function CarvedArcRibbon({ motion, paused }: HeroModelProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const innerRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
 
-  const { geometry, curve } = useMemo(() => {
+  const geometry = useMemo(() => {
     const pts: THREE.Vector3[] = [];
-    const samples = 96;
+    const samples = 80;
     for (let i = 0; i <= samples; i++) {
       const u = i / samples;
-      const angle = (u - 0.5) * Math.PI * 1.35;
-      const x = Math.sin(angle) * 2.25;
-      const y = Math.cos(angle * 0.9) * 0.85 - 0.15;
-      const z = Math.sin(angle * 1.6) * 0.85;
+      const angle = (u - 0.5) * Math.PI * 1.25;
+      const x = Math.sin(angle) * 2.1;
+      const y = Math.cos(angle * 0.85) * 0.9 - 0.15;
+      const z = Math.sin(angle * 1.7) * 0.7;
       pts.push(new THREE.Vector3(x, y, z));
     }
     const path = new THREE.CatmullRomCurve3(pts);
-
-    const tubularSegments = 180;
-    const radialSegments = 32;
+    const tubularSegments = 140;
+    const radialSegments = 24;
     const frames = path.computeFrenetFrames(tubularSegments, false);
+
     const positions: number[] = [];
     const normals: number[] = [];
     const uvs: number[] = [];
@@ -41,28 +45,30 @@ function CarvedArcRibbon({ motion, paused }: HeroModelProps) {
     for (let i = 0; i <= tubularSegments; i++) {
       const u = i / tubularSegments;
       path.getPointAt(u, p);
-
       const N = frames.normals[i];
       const B = frames.binormals[i];
 
-      const taper = Math.sin(Math.PI * Math.pow(u, 0.85));
-      const radiusX = Math.max(0.002, 0.24 * Math.pow(taper, 0.65));
-      const radiusY = Math.max(0.002, 0.065 * Math.pow(taper, 0.55));
-      const twist = u * Math.PI * 0.65;
+      const taper = Math.sin(Math.PI * u);
+      const radiusX = Math.max(0.001, 0.22 * Math.pow(taper, 0.75));
+      const radiusY = Math.max(0.001, 0.055 * Math.pow(taper, 0.65));
+      const twist = u * Math.PI * 0.85;
 
       for (let j = 0; j <= radialSegments; j++) {
         const v = (j / radialSegments) * Math.PI * 2;
         const cosV = Math.cos(v + twist);
         const sinV = Math.sin(v + twist);
 
-        normal.x = cosV * N.x + sinV * B.x;
-        normal.y = cosV * N.y + sinV * B.y;
-        normal.z = cosV * N.z + sinV * B.z;
-        normal.normalize();
+        normal.set(
+          cosV * N.x + sinV * B.x,
+          cosV * N.y + sinV * B.y,
+          cosV * N.z + sinV * B.z,
+        ).normalize();
 
-        vertex.x = p.x + radiusX * cosV * N.x + radiusY * sinV * B.x;
-        vertex.y = p.y + radiusX * cosV * N.y + radiusY * sinV * B.y;
-        vertex.z = p.z + radiusX * cosV * N.z + radiusY * sinV * B.z;
+        vertex.set(
+          p.x + radiusX * cosV * N.x + radiusY * sinV * B.x,
+          p.y + radiusX * cosV * N.y + radiusY * sinV * B.y,
+          p.z + radiusX * cosV * N.z + radiusY * sinV * B.z,
+        );
 
         positions.push(vertex.x, vertex.y, vertex.z);
         normals.push(normal.x, normal.y, normal.z);
@@ -86,55 +92,41 @@ function CarvedArcRibbon({ motion, paused }: HeroModelProps) {
     geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     geo.setIndex(indices);
     geo.computeVertexNormals();
-
-    return { geometry: geo, curve: path };
+    return geo;
   }, []);
 
-  const edgeLineGeo = useMemo(() => {
-    const pts = curve.getPoints(160);
-    return new THREE.BufferGeometry().setFromPoints(pts);
-  }, [curve]);
-
   useFrame((state, delta) => {
-    if (paused || !groupRef.current || !innerRef.current) return;
+    if (paused || !groupRef.current || !meshRef.current) return;
     const dt = Math.min(delta, 0.05);
     const t = state.clock.elapsedTime;
 
-    const rotY = motion.pointerX * 0.65 + motion.scroll * Math.PI * 1.25 + Math.sin(t * 0.45) * 0.14;
-    const rotX = motion.pointerY * 0.42 - motion.scroll * 0.5 + Math.cos(t * 0.35) * 0.1;
-    const rotZ = -0.18 + motion.pointerX * 0.12 + Math.sin(t * 0.3) * 0.05;
+    const rotY = motion.pointerX * 0.55 + motion.scroll * Math.PI * 1.15 + Math.sin(t * 0.35) * 0.1;
+    const rotX = motion.pointerY * 0.35 - motion.scroll * 0.4 + Math.cos(t * 0.3) * 0.08;
 
-    const smooth = 1 - Math.exp(-7.5 * dt);
+    const smooth = 1 - Math.exp(-6.5 * dt);
     groupRef.current.rotation.y += (rotY - groupRef.current.rotation.y) * smooth;
     groupRef.current.rotation.x += (rotX - groupRef.current.rotation.x) * smooth;
-    groupRef.current.rotation.z += (rotZ - groupRef.current.rotation.z) * smooth;
-    groupRef.current.position.y = -motion.scroll * 1.25 + Math.sin(t * 0.85) * 0.07;
+    groupRef.current.position.y = 0.05 - motion.scroll * 1.1 + Math.sin(t * 0.8) * 0.06;
 
-    const pulse = 1 + Math.min(0.12, motion.velocity * 0.09);
-    innerRef.current.scale.set(pulse, 1 / Math.sqrt(pulse), pulse);
+    const pulse = 1 + Math.min(0.09, motion.velocity * 0.06);
+    meshRef.current.scale.set(pulse, 1 / Math.sqrt(pulse), pulse);
   });
 
   return (
-    <group ref={groupRef} position={[1.05, 0.05, 0]}>
-      <mesh ref={innerRef} geometry={geometry}>
+    <group ref={groupRef} position={[1.35, 0.05, -0.3]} rotation={[0.18, -0.35, -0.22]}>
+      <mesh ref={meshRef} geometry={geometry}>
         <meshPhysicalMaterial
-          color="#d8c7ff"
-          emissive="#8a2be2"
-          emissiveIntensity={0.62}
-          roughness={0.08}
-          metalness={0.22}
-          transmission={0.78}
-          thickness={1.6}
-          ior={1.52}
-          iridescence={1}
-          iridescenceIOR={1.42}
+          color="#16141f"
+          emissive="#5900ff"
+          emissiveIntensity={0.35}
+          roughness={0.12}
+          metalness={0.78}
+          iridescence={0.9}
+          iridescenceIOR={1.4}
           clearcoat={1}
-          clearcoatRoughness={0.05}
+          clearcoatRoughness={0.06}
         />
       </mesh>
-      <lineLoop geometry={edgeLineGeo}>
-        <lineBasicMaterial color="#b36bff" transparent opacity={0.45} />
-      </lineLoop>
     </group>
   );
 }
