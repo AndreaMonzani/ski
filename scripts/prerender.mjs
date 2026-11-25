@@ -35,6 +35,5 @@ for (const route of routes) {
   fs.writeFileSync(outPath, page, 'utf-8');
 }
 
-// Clean up server bundle so Vercel only serves static client assets
 fs.rmSync(path.join(distDir, 'server'), { recursive: true, force: true });
 console.log(`Prerendered ${routes.length} routes successfully.`);
