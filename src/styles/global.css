@@ -29,6 +29,34 @@ html {
 
 .halation-text {
   text-shadow:
-    0 0 24px rgba(138, 43, 226, 0.45),
-    0 0 64px rgba(89, 0, 255, 0.25);
+    0 0 24px rgba(138, 43, 226, 0.5),
+    0 0 68px rgba(89, 0, 255, 0.3);
+}
+
+.fallback-liquid-bg {
+  background:
+    radial-gradient(ellipse 75% 55% at 72% 28%, rgba(138, 43, 226, 0.28), transparent 65%),
+    radial-gradient(ellipse 60% 50% at 25% 75%, rgba(89, 0, 255, 0.22), transparent 65%),
+    radial-gradient(circle at 50% 50%, rgba(141, 153, 174, 0.08), transparent 70%),
+    var(--color-surface);
+}
+
+@keyframes monzGrainDrift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1.5%, 1%); }
+  50% { transform: translate(1%, -1.5%); }
+  75% { transform: translate(-1%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+.css-film-grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 0);
+  background-size: 3px 3px;
+  animation: monzGrainDrift 0.35s steps(2) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .css-film-grain {
+    animation: none;
+  }
 }
