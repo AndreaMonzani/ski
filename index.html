@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Andrea Monzani | Maestro di Sci</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Ho inserito Abril Fatface per i titoli (Vibe MKBHD Studio) -->
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Geist:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <!-- Overlay Noise migliorato -->
+    <div class="noise-overlay"></div>
+
+    <!-- WebGL Canvas -->
+    <div id="webgl-container"></div>
+
+    <!-- Navbar stile Glassmorphism integrata con la palette -->
+    <div class="nav-wrap" style="margin-top: 2rem;">
+      <div class="bubble active"></div>
+      <div class="bubble hover"></div>
+      <nav class="nav">
+        <a class="active" href="#home">Home</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#studio">Studio</a>
+        <a href="#contatti">Contatti</a>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+      <section id="home" class="panel hero">
+        <h1 class="studio-title">Andrea Monzani</h1>
+        <p class="subtitle">Maestro di Sci</p>
+      </section>
+
+      <section id="gallery" class="panel bg-color-2">
+        <h2 class="studio-title">Gallery</h2>
+        <div class="gallery-container">
+          <div class="gallery-item">
+            <img src="/img/gallery/sci1.webp" alt="In azione" class="reveal-img">
+          </div>
+          <div class="gallery-item">
+            <img src="/img/gallery/sci2.webp" alt="In pista" class="reveal-img">
+          </div>
+        </div>
+      </section>
+
+      <section id="contatti" class="panel bg-color-3">
+        <h2 class="studio-title">Let's Ski</h2>
+        <div class="contact-card">
+          <p class="email-text">Email: <a href="mailto:ski@andreamonzani.com">ski@andreamonzani.com</a></p>
+          <div class="phone-reveal-container">
+            <button id="reveal-phone-btn" class="studio-btn">Mostra Numero</button>
+            <p id="hidden-phone" class="hidden-text">3460501159</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/js/main.js"></script>
+    <script>
+      const links = document.querySelectorAll("nav a");
+      links.forEach((link) => {
+        link.addEventListener("click", () => {
+          links.forEach((l) => l.classList.remove("active"));
+          link.classList.add("active");
+        });
+      });
+    </script>
+  </body>
+</html>
