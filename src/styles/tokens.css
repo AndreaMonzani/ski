@@ -1,0 +1,33 @@
+:root {
+  /* Core Palette */
+  --color-surface: #0f0f0f;
+  --color-surface-elevated: #17171a;
+  --color-ink: #ffffff;
+  --color-ink-muted: #b8c0cc;
+  --color-accent-primary: #8a2be2;
+  --color-accent-electric: #5900ff;
+  --color-slate: #8d99ae;
+  --color-border: rgba(141, 153, 174, 0.22);
+
+  /* Typography — Pairing A (default for Phase 1 specimen) */
+  --font-display-a: 'Big Shoulders Display', sans-serif;
+  --font-accent-a: 'Syne', sans-serif;
+  --font-body-a: 'Inter', system-ui, sans-serif;
+
+  /* Typography — Pairing B (specimen comparison) */
+  --font-display-b: 'Anton', sans-serif;
+  --font-accent-b: 'Unbounded', sans-serif;
+  --font-body-b: 'Geist Sans', system-ui, sans-serif;
+
+  /* Active Typography Tokens (locked after Specimen review) */
+  --font-display: var(--font-display-a);
+  --font-accent: var(--font-accent-a);
+  --font-body: var(--font-body-a);
+
+  /* Motion & Layout */
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-pill: 9999px;
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
