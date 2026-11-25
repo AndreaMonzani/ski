@@ -65,11 +65,12 @@ export function Scene({ motion, onWebGLError }: SceneProps) {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0"
+      className="monz-gl-layer"
       onPointerMove={sampleFrameCost}
     >
       <Canvas
         dpr={dpr}
+        style={{ width: '100%', height: '100%', display: 'block' }}
         camera={{ position: [0, 0, 5.2], fov: 42, near: 0.1, far: 50 }}
         gl={{
           antialias: true,
